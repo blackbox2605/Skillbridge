@@ -12,6 +12,7 @@ const courseRoutes = require('./routes/courses');
 const enrollmentRoutes = require('./routes/enrollments');
 const sessionRoutes = require('./routes/sessions');
 const materialRoutes = require('./routes/materials');
+const reviewRoutes = require('./routes/reviews');
 
 // Import WebSocket handler
 const { initializeWebSocketServer } = require('./websocket/sessionHandler');
@@ -48,6 +49,9 @@ app.use('/api/sessions/upcoming', sessionRoutes);
 
 // Nested routes for materials
 app.use('/api/courses/:courseId/materials', materialRoutes);
+
+// Nested routes for reviews
+app.use('/api/courses/:courseId/reviews', reviewRoutes);
 
 // Root route
 app.get('/', (req, res) => {

@@ -16,22 +16,47 @@ const CourseMaterials = ({ courseId, isInstructor }) => {
     title: '',
     description: ''
   });
+  const [localMaterials, setLocalMaterials] = useState([]);
+  const [isLoadingMaterials, setIsLoadingMaterials] = useState(true);
+  const [materialsError, setMaterialsError] = useState(null);
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const materialsLoaded = useRef(false);
   
   // Fetch materials when component mounts
   useEffect(() => {
+    // Only fetch materials once
+    if (materialsLoaded.current) return;
+    
     const fetchMaterials = async () => {
+      setIsLoadingMaterials(true);
+      setMaterialsError(null);
+      
       try {
-        await getCourseMaterials(courseId);
+        const fetchedMaterials = await getCourseMaterials(courseId);
+        if (fetchedMaterials) {
+          setLocalMaterials(fetchedMaterials);
+          materialsLoaded.current = true;
+        }
       } catch (error) {
         console.error('Error fetching materials:', error);
+        setMaterialsError('Failed to load course materials');
+      } finally {
+        setIsLoadingMaterials(false);
       }
     };
     
     fetchMaterials();
+    // Remove getCourseMaterials from dependencies to prevent infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
+  
+  // Update local materials when the context materials change
+  useEffect(() => {
+    if (materials && materials.length > 0) {
+      setLocalMaterials(materials);
+    }
+  }, [materials]);
   
   // Handle form input changes
   const handleChange = (e) => {
@@ -67,7 +92,12 @@ const CourseMaterials = ({ courseId, isInstructor }) => {
       uploadFormData.append('description', formData.description);
       uploadFormData.append('file', selectedFile);
       
-      await uploadMaterial(courseId, uploadFormData);
+      const newMaterial = await uploadMaterial(courseId, uploadFormData);
+      
+      // Update local materials
+      if (newMaterial) {
+        setLocalMaterials(prevMaterials => [newMaterial, ...prevMaterials]);
+      }
       
       // Reset form
       setFormData({ title: '', description: '' });
@@ -108,6 +138,10 @@ const CourseMaterials = ({ courseId, isInstructor }) => {
     if (window.confirm('Are you sure you want to delete this material?')) {
       try {
         await deleteMaterial(courseId, materialId);
+        // Update local materials state
+        setLocalMaterials(prevMaterials => 
+          prevMaterials.filter(material => material._id !== materialId)
+        );
       } catch (error) {
         console.error('Error deleting material:', error);
       }
@@ -270,73 +304,91 @@ const CourseMaterials = ({ courseId, isInstructor }) => {
       )}
       
       {/* Materials list */}
-      {isLoading ? (
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      {materialsError ? (
+        <div className="bg-red-50 text-red-700 p-4 rounded-md">
+          {materialsError}
         </div>
-      ) : materials && materials.length > 0 ? (
-        <div className="space-y-4">
-          {materials.map(material => (
-            <div 
-              key={material._id} 
-              className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center">
-                <div className="mr-4 text-xl">
-                  {getFileIcon(material.fileType)}
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">{material.title}</h3>
-                  {material.description && (
-                    <p className="text-sm text-gray-500 mt-1">{material.description}</p>
-                  )}
-                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                    <span>{material.fileName}</span>
-                    <span className="mx-2">•</span>
-                    <span>{formatFileSize(material.fileSize)}</span>
-                    <span className="mx-2">•</span>
-                    <span>{new Date(material.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleDownload(material._id, material.fileName)}
-                  disabled={downloadingId === material._id}
-                  className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full"
-                  title="Download"
-                >
-                  {downloadingId === material._id ? (
-                    <div className="animate-spin h-4 w-4 border-2 border-indigo-500 rounded-full border-t-transparent" />
-                  ) : (
-                    <FaDownload />
-                  )}
-                </button>
-                {isInstructor && material.uploadedBy === currentUser._id && (
-                  <button
-                    onClick={() => handleDelete(material._id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-                    title="Delete"
-                  >
-                    <FaTrash />
-                  </button>
-                )}
-              </div>
+      ) : isLoadingMaterials ? (
+        <div className="bg-white p-4 text-center">
+          <p className="text-gray-600">Loading materials...</p>
+        </div>
+      ) : localMaterials.length === 0 ? (
+        <div className="bg-gray-50 p-8 text-center rounded-lg">
+          <FaFile className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No materials yet</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            {isInstructor 
+              ? 'Get started by uploading study materials for your students.' 
+              : 'No study materials have been uploaded yet.'}
+          </p>
+          {isInstructor && (
+            <div className="mt-6">
+              <button
+                onClick={() => setShowUploadForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <FaPlus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                Upload Material
+              </button>
             </div>
-          ))}
+          )}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-          <FaFile className="text-gray-300 text-4xl mb-2" />
-          <p>No materials available for this course yet.</p>
-          {isInstructor && (
-            <button
-              onClick={() => setShowUploadForm(true)}
-              className="mt-2 text-indigo-600 hover:text-indigo-800"
-            >
-              Upload your first material
-            </button>
-          )}
+        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table className="min-w-full divide-y divide-gray-300">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">File</th>
+                <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Description</th>
+                <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Size</th>
+                <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {localMaterials.map((material) => (
+                <tr key={material._id}>
+                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center">
+                        {getFileIcon(material.fileType)}
+                      </div>
+                      <div className="ml-4">
+                        <div className="font-medium text-gray-900">{material.title}</div>
+                        <div className="text-gray-500">{material.filename}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 sm:table-cell">
+                    {material.description || 'No description provided'}
+                  </td>
+                  <td className="hidden whitespace-nowrap px-3 py-4 text-sm text-gray-500 sm:table-cell">
+                    {formatFileSize(material.fileSize)}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleDownload(material._id, material.filename)}
+                        disabled={downloadingId === material._id}
+                        className="text-indigo-600 hover:text-indigo-900 flex items-center disabled:opacity-50"
+                      >
+                        <FaDownload className="mr-1" />
+                        {downloadingId === material._id ? 'Downloading...' : 'Download'}
+                      </button>
+                      {isInstructor && (
+                        <button
+                          onClick={() => handleDelete(material._id)}
+                          className="text-red-600 hover:text-red-900 flex items-center"
+                        >
+                          <FaTrash className="mr-1" />
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCourses } from '../context/CourseContext';
-import { FaUserGraduate, FaArrowLeft, FaSearch, FaFilter, FaClock, FaMoneyBillWave, FaChalkboardTeacher } from 'react-icons/fa';
+import { FaUserGraduate, FaArrowLeft, FaSearch, FaFilter, FaClock, FaMoneyBillWave, FaChalkboardTeacher, FaStar } from 'react-icons/fa';
 
 const categories = [
   'All Categories',
@@ -19,7 +19,7 @@ const categories = [
 ];
 
 const ExploreSkills = () => {
-  const { getCourses, isLoading } = useCourses();
+  const { getCourses, getCourseAverageRating } = useCourses();
   const navigate = useNavigate();
   
   const [allCourses, setAllCourses] = useState([]);
@@ -28,12 +28,15 @@ const ExploreSkills = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [priceRange, setPriceRange] = useState(500);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [courseRatings, setCourseRatings] = useState({});
+  const [loading, setLoading] = useState(true);
 
   // Fetch all courses on component mount
   useEffect(() => {
     let isMounted = true;
     
     const fetchCourses = async () => {
+      setLoading(true);
       try {
         const coursesData = await getCourses();
         if (isMounted) {
@@ -46,6 +49,8 @@ const ExploreSkills = () => {
           setAllCourses([]);
           setFilteredCourses([]);
         }
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -89,6 +94,44 @@ const ExploreSkills = () => {
     setFilteredCourses(filtered);
   };
 
+  // New useEffect to fetch course ratings
+  useEffect(() => {
+    if (allCourses.length > 0) {
+      const fetchCourseRatings = async () => {
+        const ratings = {};
+        const coursesToFetch = [...allCourses]; // Create a copy to avoid state mutation
+        
+        for (const course of coursesToFetch) {
+          try {
+            // Skip fetching if we already have the rating for this course
+            if (courseRatings[course._id]) continue;
+            
+            const ratingData = await getCourseAverageRating(course._id);
+            ratings[course._id] = {
+              averageRating: ratingData.averageRating || 0,
+              reviewCount: ratingData.reviewCount || 0
+            };
+          } catch (error) {
+            console.error(`Error fetching rating for course ${course._id}:`, error);
+            ratings[course._id] = { averageRating: 0, reviewCount: 0 };
+          }
+        }
+        
+        // Only update state if we have new ratings
+        if (Object.keys(ratings).length > 0) {
+          setCourseRatings(prevRatings => ({
+            ...prevRatings,
+            ...ratings
+          }));
+        }
+      };
+      
+      fetchCourseRatings();
+    }
+  // Remove getCourseAverageRating from dependencies to prevent infinite re-renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allCourses]);
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -103,6 +146,20 @@ const ExploreSkills = () => {
 
   const toggleFilterPanel = () => {
     setIsFilterOpen(!isFilterOpen);
+  };
+
+  // Render star rating function
+  const renderStars = (rating) => {
+    return (
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <FaStar 
+            key={star} 
+            className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -212,7 +269,7 @@ const ExploreSkills = () => {
 
             {/* Course Grid */}
             <div className="mt-6">
-              {isLoading ? (
+              {loading ? (
                 <div className="flex justify-center items-center h-64">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
                 </div>
@@ -241,6 +298,17 @@ const ExploreSkills = () => {
                             <FaMoneyBillWave className="mr-1.5 h-4 w-4 text-gray-400" />
                             ₹{course.price.toFixed(2)}
                           </div>
+                          {courseRatings[course._id] && (
+                            <div className="flex items-center text-sm text-gray-500">
+                              <div className="mr-1.5 flex">
+                                {renderStars(courseRatings[course._id].averageRating)}
+                              </div>
+                              <span>
+                                {courseRatings[course._id].averageRating.toFixed(1)} 
+                                ({courseRatings[course._id].reviewCount} {courseRatings[course._id].reviewCount === 1 ? 'review' : 'reviews'})
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="bg-gray-50 px-4 py-4 sm:px-6">

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses } from '../context/CourseContext';
 import { useAuth } from '../context/AuthContext';
-import { FaUserGraduate, FaArrowLeft, FaClock, FaMoneyBillWave, FaChalkboardTeacher, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaUsers, FaRupeeSign } from 'react-icons/fa';
+import { FaUserGraduate, FaArrowLeft, FaClock, FaMoneyBillWave, FaChalkboardTeacher, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaUsers, FaRupeeSign, FaStar } from 'react-icons/fa';
 import CourseMaterials from '../components/CourseMaterials';
 import SessionDetails from '../components/SessionDetails';
+import CourseReviews from '../components/CourseReviews';
 
 // Add script for Razorpay
 const loadRazorpayScript = () => {
@@ -357,6 +358,12 @@ const CourseDetails = () => {
                   {course.description}
                 </p>
               </div>
+
+              {/* Course Reviews Section */}
+              <CourseReviews 
+                courseId={courseId} 
+                isEnrolled={isEnrolled} 
+              />
 
               {/* Enrollment deadline warning */}
               {course.enrollmentDeadline && !enrollmentDeadlinePassed && !isEnrolled && currentUser?.role === 'student' && (

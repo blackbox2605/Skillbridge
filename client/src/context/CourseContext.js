@@ -692,6 +692,106 @@ export const CourseProvider = ({ children }) => {
     }
   };
 
+  // Get course reviews
+  const getCourseReviews = async (courseId) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/courses/${courseId}/reviews`
+      );
+      
+      setIsLoading(false);
+      return response.data.data.reviews;
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setError(error.response?.data?.message || 'Failed to fetch course reviews');
+      setIsLoading(false);
+      return [];
+    }
+  };
+
+  // Add a review to a course
+  const addReview = async (courseId, reviewData) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setIsLoading(false);
+        throw new Error('You must be logged in to review a course');
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+      
+      const response = await axios.post(
+        `http://localhost:5000/api/courses/${courseId}/reviews`,
+        reviewData,
+        config
+      );
+      
+      setIsLoading(false);
+      return response.data.data.review;
+    } catch (error) {
+      console.error('Error adding review:', error);
+      setError(error.response?.data?.message || 'Failed to add review');
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
+  // Delete a review
+  const deleteReview = async (courseId, reviewId) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setIsLoading(false);
+        throw new Error('You must be logged in to delete a review');
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+      
+      await axios.delete(
+        `http://localhost:5000/api/courses/${courseId}/reviews/${reviewId}`,
+        config
+      );
+      
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      setError(error.response?.data?.message || 'Failed to delete review');
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
+  // Get course average rating
+  const getCourseAverageRating = async (courseId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/courses/${courseId}/reviews/average`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching average rating:', error);
+      return { averageRating: 0, reviewCount: 0 };
+    }
+  };
+
   const value = {
     courses,
     course,
@@ -717,7 +817,11 @@ export const CourseProvider = ({ children }) => {
     uploadMaterial,
     deleteMaterial,
     downloadMaterial,
-    getCourseStats
+    getCourseStats,
+    getCourseReviews,
+    addReview,
+    deleteReview,
+    getCourseAverageRating
   };
 
   return <CourseContext.Provider value={value}>{children}</CourseContext.Provider>;
