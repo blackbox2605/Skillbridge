@@ -1,0 +1,65 @@
+.fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  background-color: #111827 !important;
+}
+
+.controlsBar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: rgba(17, 24, 39, 0.8);
+  border-radius: 8px;
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+.controlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: rgba(31, 41, 55, 0.7);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.controlButton:hover {
+  background-color: rgba(55, 65, 81, 0.9);
+}
+
+.endCallButton {
+  background-color: rgb(220, 38, 38);
+}
+
+.endCallButton:hover {
+  background-color: rgb(185, 28, 28);
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  background-color: rgba(31, 41, 55, 0.7);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: rgba(55, 65, 81, 0.9);
+} 
