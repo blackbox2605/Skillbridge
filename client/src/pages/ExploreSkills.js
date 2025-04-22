@@ -26,7 +26,7 @@ const ExploreSkills = () => {
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [priceRange, setPriceRange] = useState(500);
+  const [priceRange, setPriceRange] = useState(10000);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [courseRatings, setCourseRatings] = useState({});
   const [loading, setLoading] = useState(true);
@@ -88,8 +88,10 @@ const ExploreSkills = () => {
       filtered = filtered.filter(course => course.category === selectedCategory);
     }
 
-    // Apply price filter
-    filtered = filtered.filter(course => course.price <= priceRange);
+    // Apply price filter - Only if price range is set to a value other than maximum
+    if (priceRange < 10000) {
+      filtered = filtered.filter(course => course.price <= priceRange);
+    }
 
     setFilteredCourses(filtered);
   };
@@ -245,22 +247,22 @@ const ExploreSkills = () => {
                   </div>
                   <div>
                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                      Max Price: ₹{priceRange}
+                      Max Price: {priceRange === 10000 ? 'All Courses' : `₹${priceRange}`}
                     </label>
                     <input
                       type="range"
                       id="price"
                       name="price"
                       min="0"
-                      max="500"
-                      step="10"
+                      max="10000"
+                      step="100"
                       className="mt-1 block w-full"
                       value={priceRange}
                       onChange={handlePriceChange}
                     />
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
                       <span>₹0</span>
-                      <span>₹500</span>
+                      <span>All</span>
                     </div>
                   </div>
                 </div>
