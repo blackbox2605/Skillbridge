@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses } from '../context/CourseContext';
 import { useAuth } from '../context/AuthContext';
 import { FaCalendarAlt, FaArrowLeft, FaUserGraduate } from 'react-icons/fa';
+import Navbar from '../components/Navbar';
 
 const ScheduleSession = () => {
   const { courseId } = useParams();
@@ -165,25 +166,7 @@ const ScheduleSession = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <FaUserGraduate className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">SkillBridge</span>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate(`/course/${courseId}`)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <FaArrowLeft className="mr-2" />
-                Back to Course
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar showBackButton={true} backUrl={`/course/${courseId}`} />
 
       <div className="py-10">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -316,19 +299,23 @@ const ScheduleSession = () => {
                 {/* Meeting Link */}
                 <div className="mb-6">
                   <label htmlFor="meetingLink" className="block text-sm font-medium text-gray-700">
-                    Meeting Link (Optional)
+                    Meeting Link (Zoom, Google Meet, etc.)
                   </label>
-                  <input
-                    type="url"
-                    id="meetingLink"
-                    name="meetingLink"
-                    value={formData.meetingLink}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    placeholder="https://zoom.us/j/example"
-                  />
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <input
+                      type="url"
+                      id="meetingLink"
+                      name="meetingLink"
+                      value={formData.meetingLink}
+                      onChange={handleChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="https://zoom.us/j/example or https://meet.google.com/example"
+                    />
+                  </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    You can add this now or update it later
+                    Provide a link where students can join your live session. You can create a meeting link using services like 
+                    <a href="https://zoom.us" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline"> Zoom</a> or 
+                    <a href="https://meet.google.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline"> Google Meet</a>.
                   </p>
                 </div>
 

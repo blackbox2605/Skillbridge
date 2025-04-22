@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses } from '../context/CourseContext';
 import { useAuth } from '../context/AuthContext';
-import { FaUserGraduate, FaArrowLeft, FaClock, FaMoneyBillWave, FaChalkboardTeacher, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaUsers, FaRupeeSign, FaStar } from 'react-icons/fa';
+import { FaUserGraduate, FaArrowLeft, FaClock, FaMoneyBillWave, FaChalkboardTeacher, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaUsers, FaRupeeSign, FaStar, FaEdit, FaVideo, FaTrash } from 'react-icons/fa';
 import CourseMaterials from '../components/CourseMaterials';
 import SessionDetails from '../components/SessionDetails';
 import CourseReviews from '../components/CourseReviews';
+import Navbar from '../components/Navbar';
 
 // Add script for Razorpay
 const loadRazorpayScript = () => {
@@ -244,25 +245,7 @@ const CourseDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <FaUserGraduate className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">SkillBridge</span>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate(-1)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <FaArrowLeft className="mr-2" />
-                Back
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar showBackButton={true} backUrl="/dashboard" />
 
       <div className="py-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

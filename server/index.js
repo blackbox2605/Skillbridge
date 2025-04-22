@@ -4,7 +4,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
-const http = require('http');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -14,19 +13,10 @@ const sessionRoutes = require('./routes/sessions');
 const materialRoutes = require('./routes/materials');
 const reviewRoutes = require('./routes/reviews');
 
-// Import WebSocket handler
-const { initializeWebSocketServer } = require('./websocket/sessionHandler');
-
 // Config
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// Create HTTP server
-const server = http.createServer(app);
-
-// Initialize WebSocket server
-const wss = initializeWebSocketServer(server);
 
 // Middleware
 app.use(express.json());
@@ -86,10 +76,9 @@ mongoose
   })
   .then(() => {
     console.log('Connected to MongoDB');
-    // Start server using http.server instead of app.listen
-    server.listen(PORT, () => {
+    // Start server
+    app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      console.log(`WebSocket server running at ws://localhost:${PORT}/ws/sessions/:sessionId`);
     });
   })
   .catch((err) => {

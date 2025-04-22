@@ -5,7 +5,7 @@ const { protect } = require('../middleware/auth');
 
 // Routes for /api/courses
 router.route('/')
-  .get(courseController.getCourses)
+  .get(protect, courseController.getCourses)
   .post(protect, courseController.createCourse);
 
 // Routes for /api/courses/:id

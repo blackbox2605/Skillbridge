@@ -39,12 +39,15 @@ exports.getCourses = async (req, res) => {
     // If user is an instructor, only show their courses
     if (req.user && req.user.role === 'instructor') {
       query.instructor = req.user.id;
+      console.log(`Filtering courses for instructor: ${req.user.id}`);
     }
 
     // Allow filtering by category if provided
     if (req.query.category) {
       query.category = req.query.category;
     }
+
+    console.log('Course query:', query);
 
     const courses = await Course.find(query)
       .populate({

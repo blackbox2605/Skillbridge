@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { FaCalendarAlt, FaClock, FaVideo, FaVideoSlash, FaEdit } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaVideo, FaVideoSlash, FaEdit, FaExternalLinkAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import VideoCall from './VideoCall';
 
 const SessionDetails = ({ session, courseId }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [showVideoCall, setShowVideoCall] = useState(false);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState('');
   
@@ -71,12 +69,12 @@ const SessionDetails = ({ session, courseId }) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  const handleJoinVideoCall = () => {
-    setShowVideoCall(true);
-  };
-  
-  const handleEndVideoCall = () => {
-    setShowVideoCall(false);
+  const handleJoinSession = () => {
+    if (session.meetingLink) {
+      window.open(session.meetingLink, '_blank', 'noopener,noreferrer');
+    } else {
+      alert('No meeting link provided for this session. Please contact the instructor.');
+    }
   };
 
   const handleEditSession = () => {
@@ -88,78 +86,84 @@ const SessionDetails = ({ session, courseId }) => {
   // Check if user is an instructor
   const isInstructor = currentUser && currentUser.role === 'instructor';
 
-  // Add unconditional Edit Session button for testing purposes
-  // This will help us check if the routing works properly
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
-      {/* Show video call if active */}
-      {showVideoCall ? (
-        <VideoCall 
-          sessionId={session._id} 
-          participants={[]} 
-          onEndCall={handleEndVideoCall} 
-        />
-      ) : (
-        <>
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">{session.title}</h2>
-            <p className="text-gray-600 mb-6">{session.description}</p>
-            
-            <div className="space-y-4">
-              <div className="flex items-center text-gray-700">
-                <FaCalendarAlt className="w-5 h-5 text-indigo-500 mr-2" />
-                <span>
-                  {formatDate(session.startDate)} to {new Date(session.endDate).toLocaleTimeString()}
-                </span>
-              </div>
-              
-              <div className="flex items-center text-gray-700">
-                <FaClock className="w-5 h-5 text-indigo-500 mr-2" />
-                <span>
-                  Duration: {Math.round((new Date(session.endDate) - new Date(session.startDate)) / (1000 * 60))} minutes
-                </span>
-              </div>
-            </div>
-            
-            {timeRemaining && (
-              <div className="mt-4 text-sm font-medium text-indigo-600">
-                {timeRemaining}
-              </div>
-            )}
-            
-            <div className="mt-8 flex space-x-4">
-              {isSessionActive ? (
-                <button
-                  onClick={handleJoinVideoCall}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <FaVideo className="mr-2" />
-                  Join Video Call
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-400 cursor-not-allowed"
-                >
-                  <FaVideoSlash className="mr-2" />
-                  {new Date(session.startDate) > new Date() ? 'Session Not Started Yet' : 'Session Has Ended'}
-                </button>
-              )}
-              
-              {/* Edit Session button for instructors */}
-              {isInstructor && (
-                <button
-                  onClick={handleEditSession}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white border-indigo-500 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <FaEdit className="mr-2" />
-                  Edit Session
-                </button>
-              )}
-            </div>
+      <div className="p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">{session.title}</h2>
+        <p className="text-gray-600 mb-6">{session.description}</p>
+        
+        <div className="space-y-4">
+          <div className="flex items-center text-gray-700">
+            <FaCalendarAlt className="w-5 h-5 text-indigo-500 mr-2" />
+            <span>
+              {formatDate(session.startDate)} to {new Date(session.endDate).toLocaleTimeString()}
+            </span>
           </div>
-        </>
-      )}
+          
+          <div className="flex items-center text-gray-700">
+            <FaClock className="w-5 h-5 text-indigo-500 mr-2" />
+            <span>
+              Duration: {Math.round((new Date(session.endDate) - new Date(session.startDate)) / (1000 * 60))} minutes
+            </span>
+          </div>
+          
+          {session.meetingLink && (
+            <div className="flex items-center text-gray-700">
+              <FaExternalLinkAlt className="w-5 h-5 text-indigo-500 mr-2" />
+              <span>
+                <a 
+                  href={session.meetingLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                >
+                  Meeting Link
+                </a>
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {timeRemaining && (
+          <div className="mt-4 text-sm font-medium text-indigo-600">
+            {timeRemaining}
+          </div>
+        )}
+        
+        <div className="mt-8 flex space-x-4">
+          {isSessionActive ? (
+            <button
+              onClick={handleJoinSession}
+              disabled={!session.meetingLink}
+              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white 
+                ${session.meetingLink ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-400 cursor-not-allowed'} 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+            >
+              <FaVideo className="mr-2" />
+              {session.meetingLink ? 'Join Live Session' : 'No Meeting Link Available'}
+            </button>
+          ) : (
+            <button
+              disabled
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-400 cursor-not-allowed"
+            >
+              <FaVideoSlash className="mr-2" />
+              {new Date(session.startDate) > new Date() ? 'Session Not Started Yet' : 'Session Has Ended'}
+            </button>
+          )}
+          
+          {/* Edit Session button for instructors */}
+          {isInstructor && (
+            <button
+              onClick={handleEditSession}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white border-indigo-500 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <FaEdit className="mr-2" />
+              Edit Session
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

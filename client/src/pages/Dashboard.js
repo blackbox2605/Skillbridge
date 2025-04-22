@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCourses } from '../context/CourseContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaUserGraduate, FaSignOutAlt, FaUserEdit, FaPlus, FaBook, FaClock, FaMoneyBillWave, FaGraduationCap, FaUsers, FaRupeeSign } from 'react-icons/fa';
+import { FaUserGraduate, FaSignOutAlt, FaUserEdit, FaPlus, FaBook, FaClock, FaMoneyBillWave, FaGraduationCap, FaUsers, FaRupeeSign, FaChalkboardTeacher } from 'react-icons/fa';
+import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
   const { currentUser, logout } = useAuth();
@@ -79,28 +80,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <FaUserGraduate className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">SkillBridge</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">
-                Welcome, {currentUser?.name}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <FaSignOutAlt className="mr-2" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar showLogout={true} onLogout={handleLogout} userName={currentUser?.name} />
 
       <div className="py-10">
         <header>
