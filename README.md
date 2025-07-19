@@ -104,6 +104,14 @@ SkillBridge/
 
 3. Open your browser and navigate to `http://localhost:5173`
 
+ ### 🌐 Live Website
+
+The application is live and running at:
+
+👉 **[https://skillbridge-frontend-two.vercel.app/](https://skillbridge-frontend-two.vercel.app/)**
+
+---
+
 ## License
 
 This project is licensed under the MIT License.
